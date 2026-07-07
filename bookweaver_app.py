@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-import os
+from html import escape as html_escape
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -30,6 +30,7 @@ def _status_block() -> str:
           <td>{chapter['status']}</td>
           <td>{chapter['blocks']}</td>
           <td>{chapter['chars']}</td>
+          <td>{f'<a class="inline-link" href="/preview/{html_escape(chapter["chapter_id"])}">Preview</a>' if chapter['status'] == 'translated' else '-'}</td>
         </tr>
         """
         for chapter in chapters
@@ -43,14 +44,54 @@ def _status_block() -> str:
         <div><strong>{status['next_pending'] or 'done'}</strong><span>next</span></div>
       </div>
       <table>
-        <thead><tr><th>Chapter</th><th>Status</th><th>Blocks</th><th>Chars</th></tr></thead>
+        <thead><tr><th>Chapter</th><th>Status</th><th>Blocks</th><th>Chars</th><th>Output</th></tr></thead>
         <tbody>{rows}</tbody>
       </table>
     </section>
     """
 
 
-def _render(message: str = "", detail: object | None = None) -> HTMLResponse:
+def _preview_block(preview: dict | None) -> str:
+    if not preview:
+        return ""
+    if not preview.get("ok"):
+        return f"""
+        <section class="panel">
+          <h2>Output Preview</h2>
+          <p>{html_escape(preview.get("message", "No preview available."))}</p>
+        </section>
+        """
+
+    source_blocks = preview.get("source_blocks", [])
+    translated_blocks = preview.get("translated_blocks", [])
+    rows = []
+    for index in range(max(len(source_blocks), len(translated_blocks))):
+        source = source_blocks[index]["text"] if index < len(source_blocks) else ""
+        translated = translated_blocks[index]["text"] if index < len(translated_blocks) else ""
+        rows.append(
+            f"""
+            <div class="preview-row">
+              <div>
+                <span class="preview-label">Source</span>
+                <p>{html_escape(source)}</p>
+              </div>
+              <div>
+                <span class="preview-label">Translation</span>
+                <p>{html_escape(translated)}</p>
+              </div>
+            </div>
+            """
+        )
+    return f"""
+    <section class="panel">
+      <h2>Output Preview: {html_escape(preview["chapter_id"])}</h2>
+      <p>{html_escape(preview["translated_file"])}</p>
+      {''.join(rows)}
+    </section>
+    """
+
+
+def _render(message: str = "", detail: object | None = None, preview: dict | None = None) -> HTMLResponse:
     detail_html = ""
     if detail is not None:
         detail_html = f"<pre>{json.dumps(detail, ensure_ascii=False, indent=2)}</pre>"
@@ -127,6 +168,7 @@ def _render(message: str = "", detail: object | None = None) -> HTMLResponse:
       display: inline-block;
       box-sizing: border-box;
     }}
+    .inline-link {{ color: var(--accent-dark); font-weight: 700; text-decoration: none; }}
     button.secondary {{ background: #25313a; }}
     button.warm {{ background: var(--warm); color: #1d160f; }}
     button:hover, .button:hover {{ filter: brightness(0.96); }}
@@ -164,9 +206,24 @@ def _render(message: str = "", detail: object | None = None) -> HTMLResponse:
       margin-bottom: 18px;
       color: #174a41;
     }}
+    .preview-row {{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }}
+    .preview-row p {{ margin: 6px 0 0; max-width: none; color: var(--ink); }}
+    .preview-label {{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }}
     @media (max-width: 900px) {{
       main {{ grid-template-columns: 1fr; padding: 18px; }}
       header {{ padding: 22px 18px 14px; }}
+      .preview-row {{ grid-template-columns: 1fr; }}
     }}
   </style>
 </head>
@@ -217,6 +274,7 @@ def _render(message: str = "", detail: object | None = None) -> HTMLResponse:
     <div>
       {f'<div class="message">{message}</div>' if message else ''}
       {_status_block()}
+      {_preview_block(preview)}
       {detail_html}
     </div>
   </main>
@@ -285,9 +343,20 @@ def translate_next(
             if translated.get("ok")
             else translated.get("message", "No chapter translated.")
         )
-        return _render(message, result)
+        preview = runtime.preview_translation(translated["chapter_id"]) if translated.get("ok") else None
+        return _render(message, result, preview=preview)
     except Exception as exc:
         return _render(f"Translation failed: {exc}")
+
+
+@app.get("/preview/{chapter_id}", response_class=HTMLResponse)
+def preview(chapter_id: str) -> HTMLResponse:
+    try:
+        result = runtime.preview_translation(chapter_id)
+    except ValueError as exc:
+        result = {"ok": False, "message": str(exc)}
+    message = f"Previewing {chapter_id}." if result.get("ok") else result.get("message", "Preview unavailable.")
+    return _render(message, preview=result)
 
 
 @app.post("/export")

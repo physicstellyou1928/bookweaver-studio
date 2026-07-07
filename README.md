@@ -9,7 +9,8 @@ the actual workflow:
 1. Submit a book: upload an EPUB or use the fabricated sample book.
 2. Analyze the book: inspect progress, next chapter, and chunking needs.
 3. Translate the next chapter: use Gemini for translation and run quality checks.
-4. Export translated package: download translated XHTML and metadata as a ZIP.
+4. Preview the result: compare source blocks with translated output in the browser.
+5. Export translated package: download translated XHTML and metadata as a ZIP.
 
 This repository contains a local prototype for a long-form translation workspace.
 It includes a product UI, an ADK multi-agent layer, an MCP workspace server, and
@@ -37,6 +38,7 @@ The page has four concrete areas:
 - `Submit A Book`
 - `Analyze`
 - `Execute Translation`
+- `Output Preview`
 - `Export`
 
 If `.env` has a real `GOOGLE_API_KEY`, the planner and quality steps run through ADK

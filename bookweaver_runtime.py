@@ -52,6 +52,12 @@ def _safe_stem(name: str) -> str:
     return stem or "chapter"
 
 
+def _safe_chapter_id(chapter_id: str) -> str:
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+", chapter_id or ""):
+        raise ValueError(f"Unsafe chapter id: {chapter_id}")
+    return chapter_id
+
+
 def _load_json(path: Path, default: Any) -> Any:
     if not path.exists():
         return default
@@ -86,6 +92,7 @@ def _blocks_from_html(html: str) -> list[ChapterBlock]:
 
 
 def read_chapter_blocks(chapter_id: str) -> list[ChapterBlock]:
+    chapter_id = _safe_chapter_id(chapter_id)
     path = TEXT_DIR / f"{chapter_id}.xhtml"
     if not path.exists():
         raise FileNotFoundError(f"Chapter not found: {chapter_id}")
@@ -330,6 +337,38 @@ def translate_next_chapter(target_language: str = "Chinese", demo_mode: bool = F
     }
 
 
+def preview_translation(chapter_id: str, max_blocks: int = 12, max_chars: int = 1200) -> dict[str, Any]:
+    """Return a bounded side-by-side preview for one translated chapter."""
+    ensure_workspace()
+    chapter_id = _safe_chapter_id(chapter_id)
+    source_path = TEXT_DIR / f"{chapter_id}.xhtml"
+    translated_path = TRANSLATED_DIR / f"{chapter_id}.xhtml"
+    if not source_path.exists():
+        return {"ok": False, "message": f"Source chapter not found: {chapter_id}"}
+    if not translated_path.exists():
+        return {"ok": False, "message": f"No translated output for: {chapter_id}"}
+
+    def payload(block: ChapterBlock) -> dict[str, str]:
+        text = block.text
+        if len(text) > max_chars:
+            text = f"{text[:max_chars].rstrip()}..."
+        return {"tag": block.tag, "text": text}
+
+    all_source_blocks = _blocks_from_html(source_path.read_text(encoding="utf-8"))
+    all_translated_blocks = _blocks_from_html(translated_path.read_text(encoding="utf-8"))
+    source_blocks = all_source_blocks[:max_blocks]
+    translated_blocks = all_translated_blocks[:max_blocks]
+    return {
+        "ok": True,
+        "chapter_id": chapter_id,
+        "source_file": str(source_path.relative_to(WORKSPACE)),
+        "translated_file": str(translated_path.relative_to(WORKSPACE)),
+        "source_blocks": [payload(block) for block in source_blocks],
+        "translated_blocks": [payload(block) for block in translated_blocks],
+        "truncated": len(all_source_blocks) > max_blocks or len(all_translated_blocks) > max_blocks,
+    }
+
+
 def export_translated_package() -> Path:
     ensure_workspace()
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -342,4 +381,3 @@ def export_translated_package() -> Path:
                 if path.is_file():
                     archive.write(path, path.relative_to(WORKSPACE))
     return out_path
-
