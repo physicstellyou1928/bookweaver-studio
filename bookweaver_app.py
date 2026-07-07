@@ -190,19 +190,19 @@ def _render(message: str = "", detail: object | None = None) -> HTMLResponse:
       </section>
 
       <section class="panel stack">
-        <h2>2. Agent Analysis</h2>
+        <h2>2. Analyze Book</h2>
         <form action="/analyze" method="post">
-          <button type="submit">Run ADK Planner</button>
+          <button type="submit">Analyze Book</button>
         </form>
       </section>
 
       <section class="panel stack">
-        <h2>3. Execute Translation</h2>
+        <h2>3. Translate Next Chapter</h2>
         <form action="/translate-next" method="post">
           <label>Target language</label>
           <input type="text" name="target_language" value="Chinese" />
           <label><input type="checkbox" name="demo_mode" value="true" /> demo mode without Gemini key</label>
-          <button class="warm" type="submit">Run Gemini Translation + Quality Agent</button>
+          <button class="warm" type="submit">Translate Next Chapter</button>
         </form>
       </section>
 
@@ -257,7 +257,11 @@ async def upload(file: UploadFile = File(...)) -> HTMLResponse:
 @app.post("/analyze")
 def analyze() -> HTMLResponse:
     result = run_analysis_workflow()
-    adk_status = "ADK planner complete." if result.get("adk_planning", {}).get("ok") else "Local analysis complete; ADK planner did not run."
+    adk_status = (
+        "Book analysis complete. ADK planner trace is shown below."
+        if result.get("adk_planning", {}).get("ok")
+        else "Local analysis complete; ADK planner did not run."
+    )
     return _render(adk_status, result)
 
 
@@ -276,7 +280,7 @@ def translate_next(
         message = (
             (
                 f"Translated {translated['chapter_id']} using {translated['mode']} mode; "
-                f"ADK quality check {'complete' if adk_quality.get('ok') else 'not available'}."
+                f"quality trace {'available' if adk_quality.get('ok') else 'not available'}."
             )
             if translated.get("ok")
             else translated.get("message", "No chapter translated.")

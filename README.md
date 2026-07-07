@@ -7,16 +7,16 @@ without dumping the whole book into an LLM prompt. It has a visible product UI f
 the actual workflow:
 
 1. Submit a book: upload an EPUB or use the fabricated sample book.
-2. Analyze the book: run the ADK planner agent over MCP workspace tools.
-3. Execute translation: translate the next pending chapter with Gemini, then run ADK quality checks.
+2. Analyze the book: inspect progress, next chapter, and chunking needs.
+3. Translate the next chapter: use Gemini for translation and run quality checks.
 4. Export translated package: download translated XHTML and metadata as a ZIP.
 
-This repository is the clean Kaggle-ready version: sample text is fabricated, secrets are
-not committed, and the architecture is easy to demonstrate in ADK Web.
-
-The product page calls the real ADK coordinator for planning and quality evidence.
-Full chapter translation is executed by the local product runtime with Gemini because
-the MCP tool boundary intentionally avoids returning complete chapter text to agents.
+This repository contains a local prototype for a long-form translation workspace.
+It includes a product UI, an ADK multi-agent layer, an MCP workspace server, and
+a fabricated sample book for safe demonstration. The product page calls the ADK
+coordinator for planning and quality evidence. Full chapter translation is
+executed by the local product runtime with Gemini because the MCP tool boundary
+intentionally avoids returning complete chapter text to agents.
 
 ## Run The Product UI
 
@@ -41,7 +41,7 @@ The page has four concrete areas:
 
 If `.env` has a real `GOOGLE_API_KEY`, the planner and quality steps run through ADK
 agents and translation uses Gemini. Demo mode is only a local workflow rehearsal path;
-use a real key for the final Kaggle video.
+use a real key for live demonstrations.
 
 ## Why This Is Also An Agent Project
 
@@ -100,9 +100,6 @@ bookweaver-studio/
   docs/
     GOOGLE_SDK.md            # How to use ADK + Gemini SDK
     DEPLOYMENT.md            # Local and Cloud Run deployment
-    KAGGLE_SUBMISSION.md     # Kaggle writeup/video/project-link checklist
-    WRITEUP_DRAFT.md         # Copyable Kaggle writeup draft
-    VIDEO_SCRIPT.md          # 3-5 minute demo script
   tests/                     # Deterministic MCP/store tests
 ```
 
@@ -150,13 +147,3 @@ Record this summary for ch01: The narrator receives a difficult letter and decid
 The MCP server intentionally does not return full chapter text. It returns chapter shape,
 progress, glossary entries, bounded summaries and quality metrics. This makes the agent
 useful for planning while reducing copyright and privacy risk.
-
-## Submission Package
-
-Use these files when preparing Kaggle:
-
-- `docs/WRITEUP_DRAFT.md`
-- `docs/VIDEO_SCRIPT.md`
-- `docs/KAGGLE_SUBMISSION.md`
-- public GitHub repository link
-- optional Cloud Run URL after deployment

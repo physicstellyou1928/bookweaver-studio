@@ -1,7 +1,7 @@
 # Deployment
 
-For Kaggle judging, a public GitHub repository is enough if live deployment is
-not practical. A live Cloud Run URL is a nice extra signal for deployability.
+BookWeaver Studio can run locally for development or as a containerized Cloud
+Run service for public demos.
 
 ## Local Product Demo
 
@@ -14,8 +14,8 @@ cp .env.example .env
 uvicorn bookweaver_app:app --host 127.0.0.1 --port 7860
 ```
 
-Open `http://127.0.0.1:7860` and record the product workflow: submit book,
-analyze, translate, export.
+Open `http://127.0.0.1:7860` and use the product workflow: submit book, analyze,
+translate, export.
 
 ## Option A: Deploy The Product UI To Cloud Run
 
@@ -56,12 +56,12 @@ gcloud run deploy bookweaver-studio \
 ```
 
 Cloud Run will build from the included `Dockerfile` and print a service URL.
-Use that as the optional live demo URL in Kaggle.
+Use that URL for a hosted product demo.
 
 ## Option B: Deploy The ADK Agent UI To Cloud Run
 
 This deploys the ADK dev-style agent app, useful as supporting evidence for the
-multi-agent layer. The product UI above is better for the main demo video.
+multi-agent layer.
 
 Official ADK Cloud Run docs expect:
 
