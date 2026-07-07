@@ -7,7 +7,7 @@ controls. ADK Web is optional supporting evidence.
 ## 1. Start The App
 
 ```bash
-cd /Users/guyun/Developer/kaggle比赛/BookWeaver_GitHub_Project/bookweaver-studio
+cd bookweaver-studio
 source .venv/bin/activate
 uvicorn bookweaver_app:app --host 127.0.0.1 --port 7860
 ```
