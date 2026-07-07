@@ -16,6 +16,7 @@ from typing import Any
 from mcp_server import store
 
 import bookweaver_runtime as runtime
+from bookweaver_adk import run_adk_planning, run_adk_quality
 
 
 @dataclass
@@ -152,10 +153,15 @@ class QualityAgent:
 
 
 def run_analysis_workflow() -> dict[str, Any]:
-    """Run the visible product analysis through the planning agent."""
+    """Run real ADK planning plus a local workspace snapshot for the UI."""
     trace = AgentTrace()
     analysis = PlanningAgent().analyze_book(trace)
-    return {"analysis": analysis, "agent_trace": trace.steps}
+    adk_planning = run_adk_planning()
+    return {
+        "adk_planning": adk_planning,
+        "workspace_snapshot": analysis,
+        "runtime_trace": trace.steps,
+    }
 
 
 def run_translation_workflow(target_language: str, demo_mode: bool) -> dict[str, Any]:
@@ -168,10 +174,13 @@ def run_translation_workflow(target_language: str, demo_mode: bool) -> dict[str,
         chapter_id = translated["chapter_id"]
         memory = MemoryAgent().record_translation(chapter_id, target_language, trace)
         quality = QualityAgent().check(chapter_id, trace)
+        adk_quality = run_adk_quality(chapter_id)
+    else:
+        adk_quality = None
     return {
         "translation": translated,
         "memory": memory,
         "quality": quality,
-        "agent_trace": trace.steps,
+        "adk_quality": adk_quality,
+        "runtime_trace": trace.steps,
     }
-

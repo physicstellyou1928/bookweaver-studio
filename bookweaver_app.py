@@ -192,7 +192,7 @@ def _render(message: str = "", detail: object | None = None) -> HTMLResponse:
       <section class="panel stack">
         <h2>2. Agent Analysis</h2>
         <form action="/analyze" method="post">
-          <button type="submit">Run Planner Agent</button>
+          <button type="submit">Run ADK Planner</button>
         </form>
       </section>
 
@@ -202,7 +202,7 @@ def _render(message: str = "", detail: object | None = None) -> HTMLResponse:
           <label>Target language</label>
           <input type="text" name="target_language" value="Chinese" />
           <label><input type="checkbox" name="demo_mode" value="true" /> demo mode without Gemini key</label>
-          <button class="warm" type="submit">Run Translation Agents</button>
+          <button class="warm" type="submit">Run Gemini Translation + Quality Agent</button>
         </form>
       </section>
 
@@ -257,7 +257,8 @@ async def upload(file: UploadFile = File(...)) -> HTMLResponse:
 @app.post("/analyze")
 def analyze() -> HTMLResponse:
     result = run_analysis_workflow()
-    return _render("Planner agent analysis complete.", result)
+    adk_status = "ADK planner complete." if result.get("adk_planning", {}).get("ok") else "Local analysis complete; ADK planner did not run."
+    return _render(adk_status, result)
 
 
 @app.post("/translate-next")
@@ -271,8 +272,12 @@ def translate_next(
             demo_mode=demo_mode == "true",
         )
         translated = result.get("translation", {})
+        adk_quality = result.get("adk_quality") or {}
         message = (
-            f"Agent workflow translated {translated['chapter_id']} using {translated['mode']} mode."
+            (
+                f"Translated {translated['chapter_id']} using {translated['mode']} mode; "
+                f"ADK quality check {'complete' if adk_quality.get('ok') else 'not available'}."
+            )
             if translated.get("ok")
             else translated.get("message", "No chapter translated.")
         )

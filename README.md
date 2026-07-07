@@ -7,16 +7,16 @@ without dumping the whole book into an LLM prompt. It has a visible product UI f
 the actual workflow:
 
 1. Submit a book: upload an EPUB or use the fabricated sample book.
-2. Analyze the book: inspect chapters, pending work and chunking needs.
-3. Execute translation: translate the next pending chapter with Gemini, or demo mode.
+2. Analyze the book: run the ADK planner agent over MCP workspace tools.
+3. Execute translation: translate the next pending chapter with Gemini, then run ADK quality checks.
 4. Export translated package: download translated XHTML and metadata as a ZIP.
 
 This repository is the clean Kaggle-ready version: sample text is fabricated, secrets are
 not committed, and the architecture is easy to demonstrate in ADK Web.
 
-The ADK/MCP layer remains in the project for the capstone architecture, but the main
-recording surface is the BookWeaver product page, not a clone of another project's
-debug UI.
+The product page calls the real ADK coordinator for planning and quality evidence.
+Full chapter translation is executed by the local product runtime with Gemini because
+the MCP tool boundary intentionally avoids returning complete chapter text to agents.
 
 ## Run The Product UI
 
@@ -39,9 +39,9 @@ The page has four concrete areas:
 - `Execute Translation`
 - `Export`
 
-If `.env` has a real `GOOGLE_API_KEY`, translation uses Gemini. If not, check
-`demo mode without Gemini key` during recording to show the workflow without an
-API call.
+If `.env` has a real `GOOGLE_API_KEY`, the planner and quality steps run through ADK
+agents and translation uses Gemini. Demo mode is only a local workflow rehearsal path;
+use a real key for the final Kaggle video.
 
 ## Why This Is Also An Agent Project
 
@@ -70,6 +70,9 @@ flowchart TD
     T -->|read/write glossary| S
     M -->|read/write memory| S
     S --> D
+
+    UI[BookWeaver product UI] -->|ADK planning + quality prompts| R
+    UI -->|full-text chapter translation| G[Gemini via google-genai]
 ```
 
 ## Course Concepts Demonstrated
@@ -77,7 +80,8 @@ flowchart TD
 | Course concept | Where it appears |
 |---|---|
 | Google ADK multi-agent system | `translationtrail/agent.py` |
-| Gemini model use | ADK `LlmAgent` configured through `TRANSLATIONTRAIL_MODEL` |
+| Product UI to ADK bridge | `bookweaver_adk.py` and `bookweaver_agents.py` |
+| Gemini model use | ADK `LlmAgent` plus direct `google-genai` translation in `bookweaver_runtime.py` |
 | MCP server | `mcp_server/server.py` and `mcp_server/store.py` |
 | Security features | Bounded tools, safe chapter IDs, no full-text MCP return, `.env.example` |
 | Deployability | `docs/DEPLOYMENT.md` |
@@ -87,6 +91,9 @@ flowchart TD
 
 ```text
 bookweaver-studio/
+  bookweaver_app.py        # FastAPI product UI
+  bookweaver_adk.py        # Product UI bridge to the real ADK root_agent
+  bookweaver_runtime.py    # EPUB import, Gemini translation, export
   translationtrail/          # Google ADK app
   mcp_server/                # Local stdio MCP server
   sample_workspace/          # Fabricated sample EPUB-like workspace

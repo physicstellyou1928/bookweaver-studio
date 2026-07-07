@@ -16,9 +16,14 @@ Show README architecture diagram.
 planning, terminology, memory, and quality. Gemini powers the reasoning. A local
 MCP server exposes the workspace tools."
 
+"The product UI calls ADK for planning and quality checks. Full chapter
+translation is handled by the local runtime with Gemini, because the MCP tools
+intentionally do not expose full chapter text to agents."
+
 Point out:
 
 - ADK: `translationtrail/agent.py`
+- UI to ADK bridge: `bookweaver_adk.py`
 - MCP: `mcp_server/server.py`
 - Deterministic store: `mcp_server/store.py`
 
@@ -42,14 +47,20 @@ Show the four product panels:
 Click:
 
 - `Use Sample Book`
-- `Analyze Book`
-- `Translate Next Chapter`
+- `Run ADK Planner`
+- Show `adk_planning.events`: transfer to `planning_agent`, then MCP tool calls
+- `Run Gemini Translation + Quality Agent`
+- Show `mode: gemini` and `adk_quality.events`
 - `Build Translated Package`
 
 Say:
 
 "This is not only an agent graph. The app has a concrete book workflow: submit
 an EPUB, analyze chapters, execute translation, and export translated output."
+
+"The important implementation detail is honest separation. ADK agents reason
+over bounded metadata through MCP. The full text translation is a local Gemini
+runtime action, so the agent tool layer does not leak whole chapters."
 
 ## 3:30 - 4:30 Safety
 

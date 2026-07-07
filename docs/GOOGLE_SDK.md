@@ -44,17 +44,17 @@ The Gemini API docs also show direct SDK use with `google-genai`:
 from google import genai
 
 client = genai.Client()
-response = client.interactions.create(
+response = client.models.generate_content(
     model="gemini-3.5-flash",
-    input="Explain how AI works in a few words",
+    contents="Explain how AI works in a few words",
 )
-print(response.output_text)
+print(response.text)
 ```
 
 BookWeaver also calls `google-genai` directly in `bookweaver_runtime.py` when
-the user clicks `Translate Next Chapter`. That makes the product UI visibly use
-Gemini for the translation action, while ADK remains the agent orchestration
-layer.
+the user clicks the translation button. That makes the product UI visibly use
+Gemini for the full-text translation action, while ADK remains responsible for
+agent planning and quality checks over bounded MCP tools.
 
 ## 3. Run The Product UI
 

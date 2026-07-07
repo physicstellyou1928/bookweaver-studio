@@ -43,9 +43,10 @@ Keep the video under 5 minutes:
    - analyze chapters
    - execute translation
    - export translated package
-3. Architecture: BookWeaver product UI + Gemini translation + ADK/MCP agent layer.
+3. Architecture: BookWeaver product UI + ADK planner/quality agents + MCP tools + Gemini translation.
 4. Explain safety:
    - no full-text MCP return
+   - full chapter text is translated by the local Gemini runtime, not returned through MCP
    - bounded writes
    - secrets in `.env`
    - audit log

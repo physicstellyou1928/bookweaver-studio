@@ -5,3 +5,4 @@ __pycache__/
 .pytest_cache/
 sample_workspace/metadata/mcp_audit.jsonl
 sample_workspace/metadata/agent_decisions.json
+sample_workspace/exports/
