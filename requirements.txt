@@ -1,0 +1,8 @@
+beautifulsoup4
+fastapi
+google-adk
+google-genai
+mcp
+pytest
+python-dotenv
+uvicorn

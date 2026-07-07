@@ -1,0 +1,2 @@
+"""TranslationTrail MCP server package."""
+
