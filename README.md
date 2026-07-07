@@ -21,7 +21,7 @@ debug UI.
 ## Run The Product UI
 
 ```bash
-cd translationtrail-capstone
+cd bookweaver-studio
 source .venv/bin/activate
 uvicorn bookweaver_app:app --host 127.0.0.1 --port 7860
 ```
@@ -86,7 +86,7 @@ flowchart TD
 ## Project Layout
 
 ```text
-translationtrail-capstone/
+bookweaver-studio/
   translationtrail/          # Google ADK app
   mcp_server/                # Local stdio MCP server
   sample_workspace/          # Fabricated sample EPUB-like workspace
@@ -102,7 +102,7 @@ translationtrail-capstone/
 ## Quickstart
 
 ```bash
-cd translationtrail-capstone
+cd bookweaver-studio
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

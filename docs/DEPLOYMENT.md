@@ -6,7 +6,7 @@ not practical. A live Cloud Run URL is a nice extra signal for deployability.
 ## Local Product Demo
 
 ```bash
-cd translationtrail-capstone
+cd bookweaver-studio
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

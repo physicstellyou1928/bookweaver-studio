@@ -7,7 +7,7 @@ controls. ADK Web is optional supporting evidence.
 ## 1. Start The App
 
 ```bash
-cd /Users/guyun/Developer/kaggle比赛/translationtrail-capstone
+cd /Users/guyun/Developer/kaggle比赛/BookWeaver_GitHub_Project/bookweaver-studio
 source .venv/bin/activate
 uvicorn bookweaver_app:app --host 127.0.0.1 --port 7860
 ```
@@ -30,7 +30,7 @@ Use the four visible panels:
 Make sure `.env` has a real Gemini key:
 
 ```bash
-GOOGLE_API_KEY=your-real-key
+GOOGLE_API_KEY=replace-with-your-gemini-api-key
 TRANSLATIONTRAIL_MODEL=gemini-3.5-flash
 TRANSLATIONTRAIL_WORKSPACE=sample_workspace
 TRANSLATIONTRAIL_CONFIRM_WRITES=FALSE
